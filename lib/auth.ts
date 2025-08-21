@@ -11,11 +11,17 @@ export interface LoginCredentials {
 export interface AuthResponse {
   access_token: string
   token_type: string
+  user_id: number
+  email: string
+  first_name: string
+  last_name: string
 }
 
 export interface User {
   id: string
   email: string
+  first_name: string
+  last_name: string
   name?: string
 }
 
@@ -24,6 +30,46 @@ export class AuthError extends Error {
   constructor(message: string, public status?: number) {
     super(message)
     this.name = 'AuthError'
+  }
+}
+
+// Función para verificar si un token JWT es válido
+export function isTokenValid(token: string): boolean {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return false
+    
+    const payload = JSON.parse(atob(parts[1]))
+    const currentTime = Math.floor(Date.now() / 1000)
+    
+    return payload.exp && payload.exp > currentTime
+  } catch (error) {
+    return false
+  }
+}
+
+// Función para obtener información básica del usuario desde el token
+export function getUserFromToken(token: string): User | null {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+    
+    const payload = JSON.parse(atob(parts[1]))
+    
+    // El payload del JWT debe contener la información del usuario
+    if (payload.sub) {
+      return {
+        id: payload.sub.toString(),
+        email: payload.email || '',
+        first_name: payload.first_name || '',
+        last_name: payload.last_name || '',
+        name: payload.name || `${payload.first_name || ''} ${payload.last_name || ''}`.trim()
+      }
+    }
+    
+    return null
+  } catch (error) {
+    return null
   }
 }
 

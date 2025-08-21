@@ -69,7 +69,11 @@ El frontend espera que tu backend tenga el siguiente endpoint de autenticación:
   ```json
   {
     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "token_type": "bearer"
+    "token_type": "bearer",
+    "user_id": 2,
+    "email": "prueba@gmail.com",
+    "first_name": "string",
+    "last_name": "string"
   }
   ```
 

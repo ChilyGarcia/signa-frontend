@@ -15,6 +15,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { useAuth } from "@/contexts/AuthContext"
+import { useBrands } from "@/hooks/useBrands"
+import { getBrandStatusInfo } from "@/lib/utils"
+import { CreateBrandData, UpdateBrandData, Brand } from "@/lib/types"
+import { StatusDropdown } from "@/components/StatusDropdown"
+import { EditBrandModal } from "@/components/EditBrandModal"
 import {
   Scale,
   Plus,
@@ -32,108 +37,55 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  AlertCircle,
 } from "lucide-react"
 
-// Mock data for trademarks
-const trademarks = [
-  {
-    id: 1,
-    marca: "TechCorp Solutions",
-    titular: "Corporación TechCorp S.A.",
-    estado: "Activo",
-    fechaRegistro: "2024-01-15",
-    categoria: "Tecnología",
-  },
-  {
-    id: 2,
-    marca: "InnovateLab",
-    titular: "Laboratorios de Innovación Ltda.",
-    estado: "Pendiente",
-    fechaRegistro: "2024-02-20",
-    categoria: "Investigación",
-  },
-  {
-    id: 3,
-    marca: "GreenEnergy Pro",
-    titular: "Energías Renovables del Futuro",
-    estado: "Activo",
-    fechaRegistro: "2024-01-08",
-    categoria: "Energía",
-  },
-  {
-    id: 4,
-    marca: "DataSecure",
-    titular: "Seguridad Digital Avanzada S.A.",
-    estado: "En Revisión",
-    fechaRegistro: "2024-03-01",
-    categoria: "Seguridad",
-  },
-  {
-    id: 5,
-    marca: "HealthTech Plus",
-    titular: "Medicina Digital S.A.",
-    estado: "Activo",
-    fechaRegistro: "2024-01-22",
-    categoria: "Salud",
-  },
-  {
-    id: 6,
-    marca: "EduSmart",
-    titular: "Educación Inteligente Ltda.",
-    estado: "Pendiente",
-    fechaRegistro: "2024-03-10",
-    categoria: "Educación",
-  },
-  {
-    id: 7,
-    marca: "CloudTech Systems",
-    titular: "Sistemas en la Nube S.A.",
-    estado: "Activo",
-    fechaRegistro: "2024-02-15",
-    categoria: "Tecnología",
-  },
-  {
-    id: 8,
-    marca: "BioMed Research",
-    titular: "Investigación Biomédica Ltda.",
-    estado: "En Revisión",
-    fechaRegistro: "2024-03-05",
-    categoria: "Medicina",
-  },
-  {
-    id: 9,
-    marca: "SmartHome Pro",
-    titular: "Hogares Inteligentes del Futuro",
-    estado: "Activo",
-    fechaRegistro: "2024-01-30",
-    categoria: "Domótica",
-  },
-  {
-    id: 10,
-    marca: "EcoFriendly Solutions",
-    titular: "Soluciones Ecológicas S.A.",
-    estado: "Pendiente",
-    fechaRegistro: "2024-03-12",
-    categoria: "Medio Ambiente",
-  },
+// Estados disponibles para las marcas
+const BRAND_STATUSES = [
+  { value: 'PENDING', label: 'Pendiente' },
+  { value: 'REGISTERED', label: 'Registrado' },
+  { value: 'REJECTED', label: 'Rechazado' },
+  { value: 'EXPIRED', label: 'Expirado' },
+  { value: 'CANCELLED', label: 'Cancelado' },
 ]
 
 export default function Dashboard() {
   const { logout, user } = useAuth()
+  const { brands, isLoading: brandsLoading, error: brandsError, addBrand, removeBrand, updateStatus, editBrand } = useBrands()
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [formData, setFormData] = useState({
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null)
+  const [formData, setFormData] = useState<CreateBrandData>({
     name: "",
     description: "",
     owner: "",
     registration_number: "",
-    status: "Pendiente",
   })
   const itemsPerPage = 5
 
   const handleNewRegistration = () => {
     setIsModalOpen(true)
+  }
+
+  const handleCreateBrand = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    try {
+      await addBrand(formData)
+      
+      // Resetear formulario y cerrar modal
+      setFormData({
+        name: "",
+        description: "",
+        owner: "",
+        registration_number: "",
+      })
+      setIsModalOpen(false)
+    } catch (error) {
+      console.error('Error al crear marca:', error)
+    }
   }
 
   const handleAudit = () => {
@@ -148,14 +100,38 @@ export default function Dashboard() {
     window.location.href = `/marca/${id}`
   }
 
-  const handleEdit = (id: number) => {
-    window.location.href = `/marca/${id}/editar`
+  const handleEdit = (brand: Brand) => {
+    setSelectedBrand(brand)
+    setIsEditModalOpen(true)
   }
 
-  const handleDelete = (id: number, marca: string) => {
-    if (confirm(`¿Estás seguro de que quieres eliminar la marca "${marca}"?`)) {
-      alert("Marca eliminada exitosamente")
-      // Here you would typically make an API call to delete the trademark
+  const handleEditSave = async (brandData: UpdateBrandData) => {
+    try {
+      await editBrand(brandData)
+      setIsEditModalOpen(false)
+      setSelectedBrand(null)
+    } catch (error) {
+      console.error('Error al actualizar marca:', error)
+      alert('Error al actualizar la marca')
+    }
+  }
+
+  const handleDelete = async (id: number, name: string) => {
+    if (confirm(`¿Estás seguro de que quieres eliminar la marca "${name}"?`)) {
+      try {
+        await removeBrand(id)
+      } catch (error) {
+        console.error('Error al eliminar marca:', error)
+      }
+    }
+  }
+
+  const handleStatusChange = async (brandId: number, newStatus: string) => {
+    try {
+      await updateStatus(brandId, newStatus)
+    } catch (error) {
+      console.error('Error al actualizar estado:', error)
+      alert('Error al actualizar el estado de la marca')
     }
   }
 
@@ -170,36 +146,25 @@ export default function Dashboard() {
     e.preventDefault()
 
     // Validación básica
-    if (!formData.name.trim() || !formData.owner.trim()) {
-      alert("Por favor, completa los campos obligatorios (Nombre de la marca y Propietario)")
+    if (!formData.name.trim() || !formData.owner.trim() || !formData.registration_number.trim()) {
+      alert("Por favor, completa todos los campos obligatorios")
       return
     }
 
-    // Aquí harías la llamada a la API para crear el registro
-    console.log("Nuevo registro de marca:", formData)
-    alert("Marca registrada exitosamente")
-
-    // Resetear formulario y cerrar modal
-    setFormData({
-      name: "",
-      description: "",
-      owner: "",
-      registration_number: "",
-      status: "Pendiente",
-    })
-    setIsModalOpen(false)
+    handleCreateBrand(e)
   }
 
-  const filteredTrademarks = trademarks.filter(
-    (trademark) =>
-      trademark.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trademark.titular.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredBrands = brands.filter(
+    (brand) =>
+      brand.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      brand.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      brand.registration_number.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const totalPages = Math.ceil(filteredTrademarks.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredBrands.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentTrademarks = filteredTrademarks.slice(startIndex, endIndex)
+  const currentBrands = filteredBrands.slice(startIndex, endIndex)
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1))
@@ -268,7 +233,7 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-                <p className="text-sm text-gray-600">Bienvenido de vuelta, {user?.name || 'Usuario'}</p>
+                <p className="text-sm text-gray-600">Bienvenido de vuelta, {user?.first_name || user?.name || 'Usuario'}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -284,9 +249,11 @@ export default function Dashboard() {
               </Button>
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-sm">
-                  <span className="text-white text-sm font-semibold">A</span>
+                  <span className="text-white text-sm font-semibold">
+                    {user?.first_name ? user.first_name.charAt(0).toUpperCase() : 'U'}
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-700">{user?.name || 'Usuario'}</span>
+                <span className="text-sm font-medium text-gray-700">{user?.first_name || user?.name || 'Usuario'}</span>
               </div>
             </div>
           </div>
@@ -299,7 +266,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total Marcas</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">3,356</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">{brands.length}</p>
                     <p className="text-xs text-gray-500 mt-1">Total Registros</p>
                   </div>
                   <div className="p-3 bg-red-50 rounded-lg">
@@ -313,9 +280,11 @@ export default function Dashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Nuevas Marcas</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">394</p>
-                    <p className="text-xs text-gray-500 mt-1">Este mes</p>
+                    <p className="text-sm font-medium text-gray-600">Marcas Pendientes</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                      {brands.filter(brand => brand.status === 'PENDING').length}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">En espera</p>
                   </div>
                   <div className="p-3 bg-red-50 rounded-lg">
                     <Plus className="h-6 w-6 text-red-600" />
@@ -328,9 +297,11 @@ export default function Dashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Costo Total</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">52,536</p>
-                    <p className="text-xs text-gray-500 mt-1">En registros</p>
+                    <p className="text-sm font-medium text-gray-600">Marcas Registradas</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                      {brands.filter(brand => brand.status === 'REGISTERED').length}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Aprobadas</p>
                   </div>
                   <div className="p-3 bg-red-50 rounded-lg">
                     <Users className="h-6 w-6 text-red-600" />
@@ -343,9 +314,11 @@ export default function Dashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Disponibles</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">39</p>
-                    <p className="text-xs text-gray-500 mt-1">Para registro</p>
+                    <p className="text-sm font-medium text-gray-600">Rechazadas</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                      {brands.filter(brand => brand.status === 'REJECTED').length}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">No aprobadas</p>
                   </div>
                   <div className="p-3 bg-red-50 rounded-lg">
                     <CheckCircle className="h-6 w-6 text-red-600" />
@@ -385,7 +358,7 @@ export default function Dashboard() {
                     <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle className="text-xl font-semibold text-gray-900">
-                          Crear Nuevo Registro de Marca
+                          Crear Nueva Marca
                         </DialogTitle>
                       </DialogHeader>
                       <form onSubmit={handleSubmit} className="space-y-6 mt-4">
@@ -435,35 +408,20 @@ export default function Dashboard() {
 
                         <div className="space-y-2">
                           <Label htmlFor="registration_number" className="text-sm font-medium text-gray-700">
-                            Número de Registro
+                            Número de Registro *
                           </Label>
                           <Input
                             id="registration_number"
                             value={formData.registration_number}
                             onChange={(e) => handleInputChange("registration_number", e.target.value)}
-                            placeholder="Número de registro (opcional)"
+                            placeholder="Número de registro"
                             className="border-gray-200 focus:border-red-500 focus:ring-red-500"
                             maxLength={100}
+                            required
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="status" className="text-sm font-medium text-gray-700">
-                            Estado *
-                          </Label>
-                          <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-                            <SelectTrigger className="border-gray-200 focus:border-red-500 focus:ring-red-500">
-                              <SelectValue placeholder="Selecciona el estado" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Pendiente">Pendiente</SelectItem>
-                              <SelectItem value="En Revisión">En Revisión</SelectItem>
-                              <SelectItem value="Activo">Activo</SelectItem>
-                              <SelectItem value="Rechazado">Rechazado</SelectItem>
-                              <SelectItem value="Expirado">Expirado</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+
 
                         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                           <Button
@@ -478,7 +436,7 @@ export default function Dashboard() {
                             type="submit"
                             className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2"
                           >
-                            Crear Registro
+                            Crear Marca
                           </Button>
                         </div>
                       </form>
@@ -493,77 +451,115 @@ export default function Dashboard() {
                   <TableHeader>
                     <TableRow className="bg-gray-25 border-b border-gray-100">
                       <TableHead className="font-semibold text-gray-700 py-4 px-6">Marca</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-4">Titular</TableHead>
+                      <TableHead className="font-semibold text-gray-700 py-4">Propietario</TableHead>
+                      <TableHead className="font-semibold text-gray-700 py-4">Número de Registro</TableHead>
                       <TableHead className="font-semibold text-gray-700 py-4">Estado</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-4">Fecha</TableHead>
+                      <TableHead className="font-semibold text-gray-700 py-4">Creado por</TableHead>
                       <TableHead className="font-semibold text-gray-700 py-4 text-right pr-6">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {currentTrademarks.map((trademark, index) => (
-                      <TableRow
-                        key={trademark.id}
-                        className={`hover:bg-red-25 transition-colors duration-150 border-b border-gray-50 ${
-                          index % 2 === 0 ? "bg-white" : "bg-gray-25"
-                        }`}
-                      >
-                        <TableCell className="font-medium text-gray-900 py-4 px-6">{trademark.marca}</TableCell>
-                        <TableCell className="text-gray-600 py-4">{trademark.titular}</TableCell>
-                        <TableCell className="py-4">
-                          <Badge
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              trademark.estado === "Activo"
-                                ? "bg-green-50 text-green-700 border border-green-200"
-                                : trademark.estado === "Pendiente"
-                                  ? "bg-yellow-50 text-yellow-700 border border-yellow-200"
-                                  : "bg-blue-50 text-blue-700 border border-blue-200"
-                            }`}
-                          >
-                            {trademark.estado}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-gray-600 py-4 text-sm">{trademark.fechaRegistro}</TableCell>
-                        <TableCell className="text-right py-4 pr-6">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-red-50 rounded-lg">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40 shadow-lg border-0 rounded-lg">
-                              <DropdownMenuItem
-                                onClick={() => handleViewDetails(trademark.id)}
-                                className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md m-1"
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Ver
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleEdit(trademark.id)}
-                                className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md m-1"
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600 cursor-pointer focus:text-red-600 py-2 px-3 hover:bg-red-50 rounded-md m-1"
-                                onClick={() => handleDelete(trademark.id, trademark.marca)}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                    {brandsLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                            <span className="ml-2 text-gray-600">Cargando marcas...</span>
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : brandsError ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <div className="text-red-600">
+                            <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+                            <p>Error al cargar las marcas: {brandsError}</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : currentBrands.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <div className="text-gray-500">
+                            <FileText className="h-8 w-8 mx-auto mb-2" />
+                            <p>No se encontraron marcas</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      currentBrands.map((brand, index) => {
+                        const statusInfo = getBrandStatusInfo(brand.status)
+                        return (
+                          <TableRow
+                            key={brand.id}
+                            className={`hover:bg-red-25 transition-colors duration-150 border-b border-gray-50 ${
+                              index % 2 === 0 ? "bg-white" : "bg-gray-25"
+                            }`}
+                          >
+                            <TableCell className="font-medium text-gray-900 py-4 px-6">
+                              <div>
+                                <div className="font-semibold">{brand.name}</div>
+                                {brand.description && (
+                                  <div className="text-sm text-gray-500 mt-1">{brand.description}</div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-gray-600 py-4">{brand.owner}</TableCell>
+                            <TableCell className="text-gray-600 py-4">{brand.registration_number}</TableCell>
+                            <TableCell className="py-4">
+                              <StatusDropdown
+                                currentStatus={brand.status}
+                                brandId={brand.id}
+                                brandName={brand.name}
+                                onStatusChange={handleStatusChange}
+                              />
+                            </TableCell>
+                            <TableCell className="text-gray-600 py-4 text-sm">
+                              {brand.creator.first_name} {brand.creator.last_name}
+                            </TableCell>
+                            <TableCell className="text-right py-4 pr-6">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-red-50 rounded-lg">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40 shadow-lg border-0 rounded-lg">
+                                  <DropdownMenuItem
+                                    onClick={() => handleViewDetails(brand.id)}
+                                    className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md m-1"
+                                  >
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    Ver
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleEdit(brand)}
+                                    className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md m-1"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="text-red-600 cursor-pointer focus:text-red-600 py-2 px-3 hover:bg-red-50 rounded-md m-1"
+                                    onClick={() => handleDelete(brand.id, brand.name)}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Eliminar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
                   </TableBody>
                 </Table>
               </div>
               <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
                 <div className="text-sm text-gray-600">
-                  Mostrando {startIndex + 1} a {Math.min(endIndex, filteredTrademarks.length)} de{" "}
-                  {filteredTrademarks.length} resultados
+                  Mostrando {startIndex + 1} a {Math.min(endIndex, filteredBrands.length)} de{" "}
+                  {filteredBrands.length} resultados
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -609,6 +605,17 @@ export default function Dashboard() {
           </Card>
         </div>
       </main>
+
+      {/* Modal de Edición */}
+      <EditBrandModal
+        brand={selectedBrand}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setSelectedBrand(null)
+        }}
+        onSave={handleEditSave}
+      />
     </div>
     </ProtectedRoute>
   )

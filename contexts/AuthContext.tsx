@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { login as authLogin, saveToken, removeToken, getToken, isAuthenticated, LoginCredentials, User } from '@/lib/auth'
+import { login as authLogin, saveToken, removeToken, getToken, isAuthenticated, LoginCredentials, User, isTokenValid, getUserFromToken } from '@/lib/auth'
 
 interface AuthContextType {
   user: User | null
@@ -21,12 +21,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Verificar autenticación al cargar la aplicación
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const token = getToken()
       if (token) {
-        // Aquí podrías validar el token con el backend si es necesario
-        // Por ahora, asumimos que si hay token, el usuario está autenticado
-        setUser({ id: '1', email: 'usuario@ejemplo.com' }) // Esto debería venir del backend
+        // Verificar si el token es válido
+        if (isTokenValid(token)) {
+          // Intentar obtener información del usuario desde el token
+          const userFromToken = getUserFromToken(token)
+          if (userFromToken) {
+            setUser(userFromToken)
+          }
+          // Si no hay información del usuario en el token, está bien
+          // el usuario se establecerá cuando haga login
+        } else {
+          // Token inválido o expirado
+          removeToken()
+        }
       }
       setIsLoading(false)
     }
@@ -42,12 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Guardar el token
       saveToken(response.access_token)
       
-      // Aquí podrías obtener la información del usuario del backend
-      // Por ahora, usamos datos de ejemplo
+      // Usar la información del usuario que viene en la respuesta del backend
       const userData: User = {
-        id: '1',
-        email: credentials.email,
-        name: credentials.email.split('@')[0]
+        id: response.user_id.toString(),
+        email: response.email,
+        first_name: response.first_name,
+        last_name: response.last_name,
+        name: `${response.first_name} ${response.last_name}`.trim()
       }
       
       setUser(userData)
@@ -70,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
     user,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user || !!getToken(),
     login,
     logout,
   }
