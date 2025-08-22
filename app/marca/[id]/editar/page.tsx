@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -41,6 +42,7 @@ const initialData: EditFormData = {
 }
 
 export default function EditarMarcaPage({ params }: { params: { id: string } }) {
+  const router = useRouter()
   const [formData, setFormData] = useState<EditFormData>(initialData)
   const [isSaving, setIsSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -57,17 +59,17 @@ export default function EditarMarcaPage({ params }: { params: { id: string } }) 
       setIsSaving(false)
       setHasChanges(false)
       alert("Cambios guardados exitosamente")
-      window.location.href = `/marca/${params.id}`
+      router.push(`/marca/${params.id}`)
     }, 1500)
   }
 
   const handleCancel = () => {
     if (hasChanges) {
       if (confirm("¿Estás seguro de que quieres cancelar? Se perderán los cambios no guardados.")) {
-        window.location.href = `/marca/${params.id}`
+        router.push(`/marca/${params.id}`)
       }
     } else {
-      window.location.href = `/marca/${params.id}`
+      router.push(`/marca/${params.id}`)
     }
   }
 

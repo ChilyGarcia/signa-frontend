@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,9 +17,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { useAuth } from "@/contexts/AuthContext"
 import { useBrands } from "@/hooks/useBrands"
-import { getBrandStatusInfo } from "@/lib/utils"
+
 import { CreateBrandData, UpdateBrandData, Brand } from "@/lib/types"
-import { StatusDropdown } from "@/components/StatusDropdown"
+
 import { EditBrandModal } from "@/components/EditBrandModal"
 import {
   Scale,
@@ -50,6 +51,7 @@ const BRAND_STATUSES = [
 ]
 
 export default function Dashboard() {
+  const router = useRouter()
   const { logout, user } = useAuth()
   const { brands, isLoading: brandsLoading, error: brandsError, addBrand, removeBrand, updateStatus, editBrand } = useBrands()
   const [searchTerm, setSearchTerm] = useState("")
@@ -89,7 +91,7 @@ export default function Dashboard() {
   }
 
   const handleAudit = () => {
-    window.location.href = "/auditoria"
+    router.push("/auditoria")
   }
 
   const handleLogout = () => {
@@ -97,7 +99,7 @@ export default function Dashboard() {
   }
 
   const handleViewDetails = (id: number) => {
-    window.location.href = `/marca/${id}`
+    router.push(`/marca/${id}`)
   }
 
   const handleEdit = (brand: Brand) => {
@@ -126,14 +128,7 @@ export default function Dashboard() {
     }
   }
 
-  const handleStatusChange = async (brandId: number, newStatus: string) => {
-    try {
-      await updateStatus(brandId, newStatus)
-    } catch (error) {
-      console.error('Error al actualizar estado:', error)
-      alert('Error al actualizar el estado de la marca')
-    }
-  }
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -189,7 +184,7 @@ export default function Dashboard() {
               <Scale className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">TradeMark Pro</h1>
+              <h1 className="text-lg font-bold text-gray-900">Signa</h1>
               <p className="text-xs text-gray-500">Sistema de Registro</p>
             </div>
           </div>
@@ -453,7 +448,6 @@ export default function Dashboard() {
                       <TableHead className="font-semibold text-gray-700 py-4 px-6">Marca</TableHead>
                       <TableHead className="font-semibold text-gray-700 py-4">Propietario</TableHead>
                       <TableHead className="font-semibold text-gray-700 py-4">Número de Registro</TableHead>
-                      <TableHead className="font-semibold text-gray-700 py-4">Estado</TableHead>
                       <TableHead className="font-semibold text-gray-700 py-4">Creado por</TableHead>
                       <TableHead className="font-semibold text-gray-700 py-4 text-right pr-6">Acciones</TableHead>
                     </TableRow>
@@ -461,7 +455,7 @@ export default function Dashboard() {
                   <TableBody>
                     {brandsLoading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           <div className="flex items-center justify-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
                             <span className="ml-2 text-gray-600">Cargando marcas...</span>
@@ -470,7 +464,7 @@ export default function Dashboard() {
                       </TableRow>
                     ) : brandsError ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           <div className="text-red-600">
                             <AlertCircle className="h-8 w-8 mx-auto mb-2" />
                             <p>Error al cargar las marcas: {brandsError}</p>
@@ -479,7 +473,7 @@ export default function Dashboard() {
                       </TableRow>
                     ) : currentBrands.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           <div className="text-gray-500">
                             <FileText className="h-8 w-8 mx-auto mb-2" />
                             <p>No se encontraron marcas</p>
@@ -488,7 +482,6 @@ export default function Dashboard() {
                       </TableRow>
                     ) : (
                       currentBrands.map((brand, index) => {
-                        const statusInfo = getBrandStatusInfo(brand.status)
                         return (
                           <TableRow
                             key={brand.id}
@@ -506,14 +499,6 @@ export default function Dashboard() {
                             </TableCell>
                             <TableCell className="text-gray-600 py-4">{brand.owner}</TableCell>
                             <TableCell className="text-gray-600 py-4">{brand.registration_number}</TableCell>
-                            <TableCell className="py-4">
-                              <StatusDropdown
-                                currentStatus={brand.status}
-                                brandId={brand.id}
-                                brandName={brand.name}
-                                onStatusChange={handleStatusChange}
-                              />
-                            </TableCell>
                             <TableCell className="text-gray-600 py-4 text-sm">
                               {brand.creator.first_name} {brand.creator.last_name}
                             </TableCell>

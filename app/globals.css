@@ -4,7 +4,6 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color tokens to match trademark registration design brief */
   --background: #ffffff;
   --foreground: #475569;
   --card: #ecfeff;

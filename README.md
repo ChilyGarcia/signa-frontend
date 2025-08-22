@@ -1,4 +1,4 @@
-# TradeMark Pro - Sistema de Registro de Marcas
+# Signa - Sistema de Registro de Marcas
 
 Sistema profesional para el registro y gestión de marcas comerciales desarrollado con Next.js 14, TypeScript y Tailwind CSS.
 
@@ -39,7 +39,7 @@ Sistema profesional para el registro y gestión de marcas comerciales desarrolla
    NEXT_PUBLIC_API_AUTH_ENDPOINT=/auth/login
    
    # App Configuration
-   NEXT_PUBLIC_APP_NAME=TradeMark Pro
+   NEXT_PUBLIC_APP_NAME=Signa
    ```
 
 4. **Ejecutar el proyecto**

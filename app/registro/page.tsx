@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -60,6 +61,7 @@ const initialFormData: FormData = {
 }
 
 export default function RegistroPage() {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -96,7 +98,7 @@ export default function RegistroPage() {
     setTimeout(() => {
       setIsSubmitting(false)
       alert("Marca registrada exitosamente!")
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     }, 2000)
   }
 
@@ -135,7 +137,7 @@ export default function RegistroPage() {
               <Scale className="h-6 w-6 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-sidebar-foreground">TradeMark Pro</h1>
+              <h1 className="text-xl font-bold text-sidebar-foreground">Signa</h1>
               <p className="text-sm text-sidebar-foreground/70">Sistema de Gestión</p>
             </div>
           </div>
@@ -171,7 +173,7 @@ export default function RegistroPage() {
                 <h2 className="text-3xl font-bold text-card-foreground">Crear Registro</h2>
                 <p className="text-muted-foreground mt-1">Registra una nueva marca comercial en el sistema</p>
               </div>
-              <Button variant="outline" onClick={() => (window.location.href = "/dashboard")}>
+              <Button variant="outline" onClick={() => router.push("/dashboard")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver al Dashboard
               </Button>

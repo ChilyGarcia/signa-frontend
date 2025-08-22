@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -36,7 +37,6 @@ import {
   AlertCircle,
 } from "lucide-react"
 
-// Mock data for a specific trademark
 const trademarkData = {
   id: 1,
   marca: "TechCorp Solutions",
@@ -87,10 +87,11 @@ const historialActividad = [
 ]
 
 export default function MarcaDetallePage({ params }: { params: { id: string } }) {
+  const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleEdit = () => {
-    window.location.href = `/marca/${params.id}/editar`
+    router.push(`/marca/${params.id}/editar`)
   }
 
   const handleDelete = async () => {
@@ -99,7 +100,7 @@ export default function MarcaDetallePage({ params }: { params: { id: string } })
     setTimeout(() => {
       setIsDeleting(false)
       alert("Marca eliminada exitosamente")
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     }, 1500)
   }
 
@@ -143,7 +144,7 @@ export default function MarcaDetallePage({ params }: { params: { id: string } })
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => (window.location.href = "/dashboard")}>
+              <Button variant="ghost" onClick={() => router.push("/dashboard")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
               </Button>
