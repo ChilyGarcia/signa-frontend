@@ -21,9 +21,9 @@ export const config = {
       search: '/audit/search'
     },
     brands: {
-      base: '/brands',
-      byId: (id: number) => `/brands/${id}`,
-      status: (id: number, status: string) => `/brands/${id}/status?status=${status}`
+      base: '/brands/',
+      byId: (id: number) => `brands/${id}`,
+      status: (id: number, status: string) => `brands/${id}/status?status=${status}`
     }
   }
 }
