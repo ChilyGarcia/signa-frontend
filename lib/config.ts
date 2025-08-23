@@ -12,13 +12,13 @@ export const config = {
       login: process.env.NEXT_PUBLIC_API_AUTH_ENDPOINT || '/auth/login'
     },
     audit: {
-      base: '/audit',
-      statistics: '/audit/statistics',
-      brand: (id: number) => `/audit/brand/${id}`,
-      user: (id: number) => `/audit/user/${id}`,
-      action: (action: string) => `/audit/action/${action}`,
-      dateRange: '/audit/date-range',
-      search: '/audit/search'
+      base: '/audit/',
+      statistics: 'audit/statistics',
+      brand: (id: number) => `audit/brand/${id}`,
+      user: (id: number) => `audit/user/${id}`,
+      action: (action: string) => `audit/action/${action}`,
+      dateRange: 'audit/date-range',
+      search: 'audit/search'
     },
     brands: {
       base: '/brands/',
