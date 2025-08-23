@@ -1,12 +1,11 @@
 import { getAuthHeaders } from './auth'
 import { Brand, CreateBrandData, UpdateBrandData } from './types'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000'
+import { buildApiUrl, config } from './config'
 
 // Función para obtener todas las marcas
 export async function getBrands(): Promise<Brand[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/brands`, {
+    const response = await fetch(buildApiUrl(config.endpoints.brands.base), {
       method: 'GET',
       headers: getAuthHeaders(),
     })
@@ -25,7 +24,7 @@ export async function getBrands(): Promise<Brand[]> {
 // Función para obtener una marca específica
 export async function getBrand(id: number): Promise<Brand> {
   try {
-    const response = await fetch(`${API_BASE_URL}/brands/${id}`, {
+    const response = await fetch(buildApiUrl(config.endpoints.brands.byId(id)), {
       method: 'GET',
       headers: getAuthHeaders(),
     })
@@ -44,7 +43,7 @@ export async function getBrand(id: number): Promise<Brand> {
 // Función para crear una nueva marca
 export async function createBrand(brandData: CreateBrandData): Promise<Brand> {
   try {
-    const response = await fetch(`${API_BASE_URL}/brands`, {
+    const response = await fetch(buildApiUrl(config.endpoints.brands.base), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(brandData),
@@ -65,7 +64,7 @@ export async function createBrand(brandData: CreateBrandData): Promise<Brand> {
 // Función para actualizar una marca
 export async function updateBrand(brandData: UpdateBrandData): Promise<Brand> {
   try {
-    const response = await fetch(`${API_BASE_URL}/brands/${brandData.id}`, {
+    const response = await fetch(buildApiUrl(config.endpoints.brands.byId(brandData.id)), {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(brandData),
@@ -86,7 +85,7 @@ export async function updateBrand(brandData: UpdateBrandData): Promise<Brand> {
 // Función para eliminar una marca
 export async function deleteBrand(id: number): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/brands/${id}`, {
+    const response = await fetch(buildApiUrl(config.endpoints.brands.byId(id)), {
       method: 'DELETE',
       headers: getAuthHeaders(),
     })
@@ -103,7 +102,7 @@ export async function deleteBrand(id: number): Promise<void> {
 // Función para actualizar solo el estado de una marca
 export async function updateBrandStatus(brandId: number, status: string): Promise<Brand> {
   try {
-    const response = await fetch(`${API_BASE_URL}/brands/${brandId}/status?status=${status}`, {
+    const response = await fetch(buildApiUrl(config.endpoints.brands.status(brandId, status)), {
       method: 'PATCH',
       headers: getAuthHeaders(),
     })

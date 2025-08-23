@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getAuthHeaders } from '@/lib/auth'
+import { config, buildAuditUrl } from '@/lib/config'
 
 export interface AuditLog {
   id: number
@@ -52,53 +53,53 @@ export function useAudit(skip: number = 0, limit: number = 100): UseAuditReturn 
   const [currentFilters, setCurrentFilters] = useState<AuditFilters>({})
 
   const buildUrl = (filters: AuditFilters, skip: number, limit: number): string => {
-    let baseUrl = 'http://127.0.0.1:8000/audit'
+    let endpoint = config.endpoints.audit.base
     
     // Si hay filtro por marca específica (ID)
     if (filters.brandId) {
-      baseUrl += `/brand/${filters.brandId}`
+      endpoint = config.endpoints.audit.brand(filters.brandId)
     }
     // Si hay filtro por usuario específico
     else if (filters.userId) {
-      baseUrl += `/user/${filters.userId}`
+      endpoint = config.endpoints.audit.user(filters.userId)
     }
     // Si hay filtro por acción específica
     else if (filters.action) {
-      baseUrl += `/action/${filters.action}`
+      endpoint = config.endpoints.audit.action(filters.action)
     }
     // Si hay filtro por rango de fechas
     else if (filters.dateFrom || filters.dateTo) {
-      baseUrl += '/date-range'
+      endpoint = config.endpoints.audit.dateRange
     }
     // Si hay filtro por nombre de marca
     else if (filters.brandName) {
-      baseUrl += '/search'
+      endpoint = config.endpoints.audit.search
     }
     
-    // Agregar parámetros de paginación
-    const params = new URLSearchParams({
-      skip: skip.toString(),
-      limit: limit.toString()
-    })
+    // Construir parámetros
+    const params: Record<string, string | number> = {
+      skip,
+      limit
+    }
     
     // Agregar filtros adicionales como query parameters
     if (filters.dateFrom) {
-      params.append('date_from', filters.dateFrom)
+      params.date_from = filters.dateFrom
     }
     if (filters.dateTo) {
-      params.append('date_to', filters.dateTo)
+      params.date_to = filters.dateTo
     }
     if (filters.brandName) {
-      params.append('brand_name', filters.brandName)
+      params.brand_name = filters.brandName
     }
     
-    return `${baseUrl}?${params.toString()}`
+    return buildAuditUrl(endpoint, params)
   }
 
   const fetchStatistics = async () => {
     try {
       const headers = getAuthHeaders()
-      const response = await fetch('http://127.0.0.1:8000/audit/statistics', {
+      const response = await fetch(buildAuditUrl(config.endpoints.audit.statistics), {
         headers
       })
       

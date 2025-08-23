@@ -1,6 +1,4 @@
-// Configuración de la API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000'
-const AUTH_ENDPOINT = process.env.NEXT_PUBLIC_API_AUTH_ENDPOINT || '/auth/login'
+import { config, buildApiUrl } from './config'
 
 // Tipos para la autenticación
 export interface LoginCredentials {
@@ -76,7 +74,7 @@ export function getUserFromToken(token: string): User | null {
 // Función para hacer login
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}${AUTH_ENDPOINT}`, {
+    const response = await fetch(buildApiUrl(config.endpoints.auth.login), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
