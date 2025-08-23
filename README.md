@@ -1,23 +1,60 @@
-# Signa - Sistema de Registro de Marcas
+# 🏷️ Signa Frontend
 
-Sistema profesional para el registro y gestión de marcas comerciales desarrollado con Next.js 14, TypeScript y Tailwind CSS.
+Una aplicación web moderna para la gestión integral de marcas comerciales, desarrollada con Next.js 15, TypeScript y Tailwind CSS.
 
-## 🚀 Características
+## 📋 Descripción
 
-- **Autenticación segura** con JWT tokens
-- **Dashboard interactivo** con estadísticas en tiempo real
-- **Gestión completa de marcas** (crear, editar, eliminar, ver)
-- **Sistema de auditoría** para seguimiento de cambios
-- **Interfaz moderna y responsiva** con diseño profesional
-- **Protección de rutas** para usuarios autenticados
+Signa Frontend es una interfaz de usuario intuitiva y responsive que permite a los usuarios gestionar marcas comerciales de manera eficiente. La aplicación incluye funcionalidades de registro, seguimiento de estados, auditoría completa y un dashboard interactivo.
 
-## 📋 Requisitos Previos
+## ✨ Características Principales
 
+### 🎯 Gestión de Marcas
+- **Registro de Marcas**: Crear nuevas marcas con información detallada
+- **Estados de Marca**: Seguimiento de estados (Pendiente, Registrado, Rechazado, Expirado, Cancelado)
+- **Edición y Actualización**: Modificar información de marcas existentes
+- **Búsqueda y Filtrado**: Encontrar marcas rápidamente con búsqueda avanzada
+
+### 🔍 Sistema de Auditoría
+- **Logs de Actividad**: Registro completo de todas las acciones realizadas
+- **Filtros Avanzados**: Filtrar por usuario, marca, acción y rango de fechas
+- **Estadísticas**: Métricas detalladas de actividad del sistema
+- **Trazabilidad**: Seguimiento completo de cambios y modificaciones
+
+### 🛡️ Autenticación y Seguridad
+- **Sistema de Login**: Autenticación segura de usuarios
+- **Rutas Protegidas**: Acceso controlado a funcionalidades sensibles
+- **Contexto de Autenticación**: Gestión centralizada del estado de usuario
+
+### 🎨 Interfaz de Usuario
+- **Diseño Moderno**: UI/UX basada en componentes de Radix UI
+- **Responsive**: Optimizado para dispositivos móviles y desktop
+- **Tema Oscuro/Claro**: Soporte para múltiples temas
+- **Componentes Reutilizables**: Biblioteca de componentes UI consistente
+
+## 🛠️ Tecnologías Utilizadas
+
+### Frontend
+- **Next.js 15**: Framework de React con App Router
+- **TypeScript**: Tipado estático para mayor robustez
+- **Tailwind CSS**: Framework de CSS utilitario
+- **Radix UI**: Componentes de interfaz accesibles
+- **React Hook Form**: Gestión de formularios
+- **Zod**: Validación de esquemas
+
+### Herramientas de Desarrollo
+- **pnpm**: Gestor de paquetes rápido y eficiente
+- **ESLint**: Linting de código
+- **PostCSS**: Procesamiento de CSS
+- **Autoprefixer**: Compatibilidad con navegadores
+
+## 📦 Instalación
+
+### Prerrequisitos
 - Node.js 18+ 
 - pnpm (recomendado) o npm
-- Backend API corriendo en `http://127.0.0.1:8000`
+- Backend API de Signa ejecutándose
 
-## 🛠️ Instalación
+### Pasos de Instalación
 
 1. **Clonar el repositorio**
    ```bash
@@ -28,139 +65,120 @@ Sistema profesional para el registro y gestión de marcas comerciales desarrolla
 2. **Instalar dependencias**
    ```bash
    pnpm install
+   # o
+   npm install
    ```
 
 3. **Configurar variables de entorno**
-   
-   Crea un archivo `.env.local` en la raíz del proyecto:
+   ```bash
+   cp env.example .env.local
+   ```
+
+4. **Editar configuración**
+   Abre `.env.local` y configura las variables necesarias:
    ```env
-   # Backend API Configuration
    NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
    NEXT_PUBLIC_API_AUTH_ENDPOINT=/auth/login
-   
-   # App Configuration
    NEXT_PUBLIC_APP_NAME=Signa
    ```
 
-4. **Ejecutar el proyecto**
-   ```bash
-   pnpm dev
-   ```
+## 🚀 Ejecución
 
-5. **Abrir en el navegador**
-   ```
-   http://localhost:3000
-   ```
+### Desarrollo
+```bash
+pnpm dev
+# o
+npm run dev
+```
 
-## 🔧 Configuración del Backend
+La aplicación estará disponible en `http://localhost:3000`
 
-El frontend espera que tu backend tenga el siguiente endpoint de autenticación:
+### Producción
+```bash
+# Construir la aplicación
+pnpm build
 
-### Endpoint de Login
-- **URL**: `POST /auth/login`
-- **Body**:
-  ```json
-  {
-    "email": "usuario@ejemplo.com",
-    "password": "contraseña123"
-  }
-  ```
-- **Respuesta exitosa**:
-  ```json
-  {
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "token_type": "bearer",
-    "user_id": 2,
-    "email": "prueba@gmail.com",
-    "first_name": "string",
-    "last_name": "string"
-  }
-  ```
+# Ejecutar en producción
+pnpm start
+```
 
-## 🏗️ Estructura del Proyecto
+## 📁 Estructura del Proyecto
 
 ```
 signa-front/
-├── app/                    # Páginas de Next.js 14 (App Router)
-│   ├── dashboard/         # Dashboard principal
+├── app/                    # App Router de Next.js
 │   ├── auditoria/         # Página de auditoría
+│   ├── dashboard/         # Dashboard principal
 │   ├── marca/            # Gestión de marcas
+│   ├── registro/         # Página de registro
 │   └── layout.tsx        # Layout principal
 ├── components/           # Componentes reutilizables
-│   ├── ui/              # Componentes de UI base
-│   └── ProtectedRoute.tsx # Protección de rutas
+│   ├── ui/              # Componentes de interfaz
+│   └── ...              # Componentes específicos
 ├── contexts/            # Contextos de React
-│   └── AuthContext.tsx  # Contexto de autenticación
-├── lib/                 # Utilidades y servicios
-│   └── auth.ts         # Servicio de autenticación
-└── hooks/              # Hooks personalizados
+├── hooks/               # Custom hooks
+├── lib/                 # Utilidades y configuración
+├── public/              # Archivos estáticos
+└── styles/              # Estilos globales
 ```
 
-## 🔐 Autenticación
+## 🔧 Configuración
 
-El sistema implementa autenticación JWT con las siguientes características:
+### Variables de Entorno
 
-- **Login seguro** con validación de credenciales
-- **Almacenamiento de tokens** en localStorage
-- **Protección de rutas** automática
-- **Logout** con limpieza de datos
-- **Manejo de errores** de autenticación
+| Variable | Descripción | Valor por Defecto |
+|----------|-------------|-------------------|
+| `NEXT_PUBLIC_API_BASE_URL` | URL base del backend API | `http://127.0.0.1:8000` |
+| `NEXT_PUBLIC_API_AUTH_ENDPOINT` | Endpoint de autenticación | `/auth/login` |
+| `NEXT_PUBLIC_APP_NAME` | Nombre de la aplicación | `Signa` |
 
-### Flujo de Autenticación
+### Configuración del Backend
 
-1. Usuario ingresa credenciales en `/`
-2. Se valida con el backend en `/auth/login`
-3. Se almacena el token JWT
-4. Se redirige al dashboard
-5. Las rutas protegidas verifican el token automáticamente
+Asegúrate de que el backend API esté configurado con los siguientes endpoints:
 
-## 🎨 Componentes UI
+- `POST /auth/login` - Autenticación de usuarios
+- `GET /brands/` - Listar marcas
+- `POST /brands/` - Crear marca
+- `PUT /brands/{id}` - Actualizar marca
+- `DELETE /brands/{id}` - Eliminar marca
+- `GET /audit/` - Logs de auditoría
+- `GET /audit/statistics` - Estadísticas de auditoría
 
-El proyecto utiliza una biblioteca de componentes personalizada basada en:
-- **shadcn/ui** para componentes base
-- **Tailwind CSS** para estilos
-- **Lucide React** para iconos
-- **Radix UI** para accesibilidad
+## 📱 Uso de la Aplicación
 
-## 📱 Responsive Design
+### 1. Autenticación
+- Accede a la aplicación con tus credenciales
+- El sistema mantendrá tu sesión activa
 
-La aplicación está completamente optimizada para:
-- **Desktop** (1024px+)
-- **Tablet** (768px - 1023px)
-- **Mobile** (< 768px)
+### 2. Dashboard
+- Vista general de todas las marcas registradas
+- Estadísticas y métricas importantes
+- Acceso rápido a funcionalidades principales
 
-## 🔧 Scripts Disponibles
+### 3. Gestión de Marcas
+- **Crear Marca**: Completa el formulario con la información requerida
+- **Editar Marca**: Modifica información existente
+- **Cambiar Estado**: Actualiza el estado de la marca según corresponda
+- **Eliminar Marca**: Elimina marcas que ya no son necesarias
+
+### 4. Auditoría
+- Revisa todos los cambios realizados en el sistema
+- Filtra por diferentes criterios (usuario, marca, acción, fecha)
+- Visualiza estadísticas de actividad
+
+## 🧪 Scripts Disponibles
 
 ```bash
 # Desarrollo
-pnpm dev
+pnpm dev          # Iniciar servidor de desarrollo
 
-# Build de producción
-pnpm build
-
-# Ejecutar build de producción
-pnpm start
+# Construcción
+pnpm build        # Construir para producción
+pnpm start        # Ejecutar en modo producción
 
 # Linting
-pnpm lint
-
-# Type checking
-pnpm type-check
+pnpm lint         # Ejecutar ESLint
 ```
-
-## 🚀 Despliegue
-
-### Vercel (Recomendado)
-1. Conecta tu repositorio a Vercel
-2. Configura las variables de entorno en el dashboard de Vercel
-3. Deploy automático en cada push
-
-### Otros proveedores
-El proyecto es compatible con cualquier proveedor que soporte Next.js:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
 
 ## 🤝 Contribución
 
@@ -176,24 +194,22 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 🆘 Soporte
 
-Si tienes problemas o preguntas:
+Si encuentras algún problema o tienes preguntas:
 
 1. Revisa la documentación del backend
-2. Verifica que las variables de entorno estén configuradas correctamente
-3. Asegúrate de que el backend esté corriendo en el puerto correcto
-4. Revisa la consola del navegador para errores
+2. Verifica la configuración de variables de entorno
+3. Asegúrate de que el backend esté ejecutándose
+4. Revisa los logs de la consola del navegador
 
-## 🔄 Actualizaciones
+## 🔮 Roadmap
 
-Para mantener el proyecto actualizado:
+- [ ] Implementación de notificaciones en tiempo real
+- [ ] Exportación de datos a diferentes formatos
+- [ ] Dashboard con gráficos avanzados
+- [ ] Sistema de roles y permisos
+- [ ] Integración con servicios externos
+- [ ] Aplicación móvil nativa
 
-```bash
-# Actualizar dependencias
-pnpm update
+---
 
-# Verificar vulnerabilidades
-pnpm audit
-
-# Corregir vulnerabilidades automáticamente
-pnpm audit --fix
-```
+**Desarrollado con ❤️ para la gestión eficiente de marcas comerciales**
