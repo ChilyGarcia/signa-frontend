@@ -510,13 +510,7 @@ export default function Dashboard() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-40 shadow-lg border-0 rounded-lg">
-                                  <DropdownMenuItem
-                                    onClick={() => handleViewDetails(brand.id)}
-                                    className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md m-1"
-                                  >
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    Ver
-                                  </DropdownMenuItem>
+                    
                                   <DropdownMenuItem
                                     onClick={() => handleEdit(brand)}
                                     className="cursor-pointer py-2 px-3 hover:bg-gray-50 rounded-md m-1"

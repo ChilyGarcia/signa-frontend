@@ -13,17 +13,17 @@ export const config = {
     },
     audit: {
       base: '/audit/',
-      statistics: 'audit/statistics',
-      brand: (id: number) => `audit/brand/${id}`,
-      user: (id: number) => `audit/user/${id}`,
-      action: (action: string) => `audit/action/${action}`,
-      dateRange: 'audit/date-range',
-      search: 'audit/search'
+      statistics: '/audit/statistics',
+      brand: (id: number) => `/audit/brand/${id}`,
+      user: (id: number) => `/audit/user/${id}`,
+      action: (action: string) => `/audit/action/${action}`,
+      dateRange: '/audit/date-range',
+      search: '/audit/search'
     },
     brands: {
       base: '/brands/',
-      byId: (id: number) => `brands/${id}`,
-      status: (id: number, status: string) => `brands/${id}/status?status=${status}`
+      byId: (id: number) => `/brands/${id}`,
+      status: (id: number, status: string) => `/brands/${id}/status?status=${status}`
     }
   }
 }
